@@ -30,4 +30,7 @@ public class User {
 
     @Column(name = "recurring_reminders")
     private Boolean recurringReminders = true;
+
+    @Column(name = "month_start")
+    private Integer monthStart = 1;
 }
