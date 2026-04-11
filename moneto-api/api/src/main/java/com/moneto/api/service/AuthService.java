@@ -42,7 +42,7 @@ public class AuthService {
         createDefaultCategories(user);
 
         String token = jwtService.generateToken(user.getEmail());
-        return new AuthResponse(token, user.getName(), user.getEmail());
+        return new AuthResponse(token, user.getName(), user.getEmail(), user.getCurrency());
     }
 
     public AuthResponse login(LoginRequest request) {
@@ -57,7 +57,7 @@ public class AuthService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         String token = jwtService.generateToken(user.getEmail());
-        return new AuthResponse(token, user.getName(), user.getEmail());
+        return new AuthResponse(token, user.getName(), user.getEmail(), user.getCurrency());
     }
 
     private void createDefaultCategories(User user) {

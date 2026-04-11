@@ -3,6 +3,9 @@ import { useAuth } from '../context/AuthContext'
 import { getMonthlySummary, getSpendingByCategory, getMonthlyTrend, getTopCategory } from '../services/analyticsService'
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts'
 import Navbar from '../components/Navbar'
+import { getCurrencySymbol } from '../utils/currency'
+import api from '../services/api'
+
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316']
 
@@ -13,26 +16,29 @@ export default function Dashboard() {
   const [trendData, setTrendData] = useState([])
   const [topCategory, setTopCategory] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [currencySymbol, setCurrencySymbol] = useState('$')
 
   useEffect(() => {
     const fetchData = async () => {
-      try {
-        const [s, c, t, top] = await Promise.all([
-          getMonthlySummary(),
-          getSpendingByCategory(),
-          getMonthlyTrend(),
-          getTopCategory()
-        ])
-        setSummary(s)
-        setCategoryData(Object.entries(c).map(([name, value]) => ({ name, value })))
-        setTrendData(t)
-        setTopCategory(top)
-      } catch (err) {
-        console.error(err)
-      } finally {
-        setLoading(false)
-      }
-    }
+  try {
+    const [s, c, t, top] = await Promise.all([
+      getMonthlySummary(),
+      getSpendingByCategory(),
+      getMonthlyTrend(),
+      getTopCategory()
+    ])
+    const profile = await api.get('/user/profile')
+    setCurrencySymbol(getCurrencySymbol(profile.data.currency))
+    setSummary(s)
+    setCategoryData(Object.entries(c).map(([name, value]) => ({ name, value })))
+    setTrendData(t)
+    setTopCategory(top)
+  } catch (err) {
+    console.error(err)
+  } finally {
+    setLoading(false)
+  }
+}
     fetchData()
   }, [])
 
@@ -51,19 +57,19 @@ export default function Dashboard() {
         <div className="grid grid-cols-4 gap-4 mb-8">
           <div className="bg-gray-900 rounded-2xl p-6">
             <p className="text-gray-400 text-sm mb-1">Total Income</p>
-            <p className="text-2xl font-bold text-green-400">${summary?.totalIncome ?? 0}</p>
+            <p className="text-2xl font-bold text-green-400">{currencySymbol}{summary?.totalIncome ?? 0}</p>
           </div>
           <div className="bg-gray-900 rounded-2xl p-6">
             <p className="text-gray-400 text-sm mb-1">Total Expenses</p>
-            <p className="text-2xl font-bold text-red-400">${summary?.totalExpenses ?? 0}</p>
+            <p className="text-2xl font-bold text-red-400">{currencySymbol}{summary?.totalExpenses ?? 0}</p>
           </div>
           <div className="bg-gray-900 rounded-2xl p-6">
             <p className="text-gray-400 text-sm mb-1">Net Balance</p>
-            <p className="text-2xl font-bold text-blue-400">${summary?.netBalance ?? 0}</p>
+            <p className="text-2xl font-bold text-blue-400">{currencySymbol}{summary?.netBalance ?? 0}</p>
           </div>
           <div className="bg-gray-900 rounded-2xl p-6">
             <p className="text-gray-400 text-sm mb-1">Total Saved</p>
-            <p className="text-2xl font-bold text-purple-400">${summary?.totalSaved ?? 0}</p>
+            <p className="text-2xl font-bold text-purple-400">{currencySymbol}{summary?.totalSaved ?? 0}</p>
           </div>
         </div>
 

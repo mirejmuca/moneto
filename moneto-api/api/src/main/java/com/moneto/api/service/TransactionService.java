@@ -36,7 +36,8 @@ public class TransactionService {
 
     public Transaction createTransaction(Long categoryId, BigDecimal amount,
                                          TransactionType type, String description,
-                                         LocalDate date, Boolean isRecurring) {
+                                         LocalDate date, Boolean isRecurring,
+                                         Currency currency) {
         User user = userService.getCurrentUser();
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new RuntimeException("Category not found"));
@@ -49,6 +50,7 @@ public class TransactionService {
         transaction.setDescription(description);
         transaction.setDate(date);
         transaction.setIsRecurring(isRecurring != null && isRecurring);
+        transaction.setCurrency(currency != null ? currency : Currency.USD);
 
         Transaction saved = transactionRepository.save(transaction);
 

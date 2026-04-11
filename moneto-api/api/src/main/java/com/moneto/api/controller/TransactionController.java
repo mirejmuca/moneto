@@ -1,5 +1,6 @@
 package com.moneto.api.controller;
 
+import com.moneto.api.model.Currency;
 import com.moneto.api.model.Transaction;
 import com.moneto.api.model.TransactionType;
 import com.moneto.api.service.TransactionService;
@@ -44,9 +45,10 @@ public class TransactionController {
             @RequestParam TransactionType type,
             @RequestParam(required = false) String description,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
-            @RequestParam(required = false) Boolean isRecurring) {
+            @RequestParam(required = false) Boolean isRecurring,
+            @RequestParam(required = false) Currency currency) {
         return ResponseEntity.ok(transactionService.createTransaction(
-                categoryId, amount, type, description, date, isRecurring));
+                categoryId, amount, type, description, date, isRecurring, currency));
     }
 
     @PutMapping("/{id}")

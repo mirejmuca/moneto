@@ -20,6 +20,7 @@ export default function Navbar() {
           <Link to="/budgets" className="text-gray-400 hover:text-white text-sm transition">Budgets</Link>
           <Link to="/goals" className="text-gray-400 hover:text-white text-sm transition">Goals</Link>
           <Link to="/settings" className="text-gray-400 hover:text-white text-sm transition">Settings</Link>
+          <Link to="/categories" className="text-gray-400 hover:text-white text-sm transition">Categories</Link>
         </div>
       </div>
       <div className="flex items-center gap-4">

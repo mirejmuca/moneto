@@ -18,8 +18,3 @@ export const updateTransaction = async (id, data) => {
 export const deleteTransaction = async (id) => {
     await api.delete(`/transactions/${id}`);
 };
-
-export const getCategories = async () => {
-    const response = await api.get('/categories');
-    return response.data;
-};

@@ -31,6 +31,10 @@ public class Transaction {
     @Column(nullable = false)
     private TransactionType type;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Currency currency = Currency.USD;
+
     private String description;
 
     @Column(nullable = false)

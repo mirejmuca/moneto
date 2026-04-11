@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { getTransactions, createTransaction, deleteTransaction } from '../services/transactionService'
-import { getCategories } from '../services/transactionService'
+import { getCategories } from '../services/categoryService'
 import Navbar from '../components/Navbar'
+import { getCurrencySymbol } from '../utils/currency'
 
 export default function Transactions() {
   const [transactions, setTransactions] = useState([])
@@ -14,7 +15,8 @@ export default function Transactions() {
     type: 'EXPENSE',
     description: '',
     date: new Date().toISOString().split('T')[0],
-    isRecurring: false
+    isRecurring: false,
+    currency: 'USD'
   })
 
   useEffect(() => {
@@ -115,7 +117,21 @@ export default function Transactions() {
                 <label className="text-gray-400 text-sm mb-1 block">Amount</label>
                 <input type="number" name="amount" value={form.amount} onChange={handleChange}
                   className="w-full bg-gray-800 text-white rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="0.00" required />
+                  placeholder="0.00" min="0.01" step="0.01" required />
+              </div>
+              <div>
+                <label className="text-gray-400 text-sm mb-1 block">Currency</label>
+                <select name="currency" value={form.currency} onChange={handleChange}
+                  className="w-full bg-gray-800 text-white rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500">
+                  <option value="USD">USD</option>
+                  <option value="EUR">EUR</option>
+                  <option value="GBP">GBP</option>
+                  <option value="ALL">ALL</option>
+                  <option value="CHF">CHF</option>
+                  <option value="CAD">CAD</option>
+                  <option value="AUD">AUD</option>
+                  <option value="JPY">JPY</option>
+                </select>
               </div>
               <div>
                 <label className="text-gray-400 text-sm mb-1 block">Date</label>
@@ -172,7 +188,7 @@ export default function Transactions() {
                       </span>
                     </td>
                     <td className={`px-6 py-4 text-sm font-semibold text-right ${t.type === 'INCOME' ? 'text-green-400' : 'text-red-400'}`}>
-                      {t.type === 'INCOME' ? '+' : '-'}${t.amount}
+                      {t.type === 'INCOME' ? '+' : '-'}{getCurrencySymbol(t.currency)}{t.amount}
                     </td>
                     <td className="px-6 py-4 text-right">
                       <button onClick={() => handleDelete(t.id)}

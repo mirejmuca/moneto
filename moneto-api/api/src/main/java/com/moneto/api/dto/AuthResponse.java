@@ -1,5 +1,6 @@
 package com.moneto.api.dto;
 
+import com.moneto.api.model.Currency;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -9,4 +10,5 @@ public class AuthResponse {
     private String token;
     private String name;
     private String email;
+    private Currency currency;
 }

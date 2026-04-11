@@ -4,6 +4,10 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
 import Transactions from './pages/Transactions'
+import Budgets from './pages/Budgets'
+import Goals from './pages/Goals'
+import Settings from './pages/Settings'
+import Categories from './pages/Categories'
 
 const ProtectedRoute = ({ children }) => {
   const { token } = useAuth()
@@ -25,6 +29,26 @@ function App() {
           <Transactions />
          </ProtectedRoute>
       } />
+      <Route path="/budgets" element={
+        <ProtectedRoute>
+          <Budgets />
+         </ProtectedRoute>
+      } />
+      <Route path="/goals" element={
+        <ProtectedRoute>
+          <Goals />
+        </ProtectedRoute>
+      } />
+      <Route path="/settings" element={
+        <ProtectedRoute>
+          <Settings />
+        </ProtectedRoute>
+      } />
+      <Route path="/categories" element={
+        <ProtectedRoute>
+          <Categories />
+        </ProtectedRoute>
+} />
     </Routes>
   )
 }

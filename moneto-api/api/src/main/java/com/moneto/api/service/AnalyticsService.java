@@ -1,6 +1,7 @@
 package com.moneto.api.service;
 
 import com.moneto.api.model.*;
+import com.moneto.api.model.Currency;
 import com.moneto.api.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,7 @@ public class AnalyticsService {
     private final TransactionRepository transactionRepository;
     private final SavingGoalRepository savingGoalRepository;
     private final UserService userService;
+    private final ExchangeRateService exchangeRateService;
 
     public Map<String, Object> getMonthlySummary() {
         User user = userService.getCurrentUser();
@@ -26,14 +28,16 @@ public class AnalyticsService {
         List<Transaction> transactions = transactionRepository
                 .findByUserIdAndDateBetween(user.getId(), start, end);
 
+        Currency userCurrency = user.getCurrency();
+
         BigDecimal totalIncome = transactions.stream()
                 .filter(t -> t.getType() == TransactionType.INCOME)
-                .map(Transaction::getAmount)
+                .map(t -> convertAmount(t.getAmount(), t.getCurrency(), userCurrency))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         BigDecimal totalExpenses = transactions.stream()
                 .filter(t -> t.getType() == TransactionType.EXPENSE)
-                .map(Transaction::getAmount)
+                .map(t -> convertAmount(t.getAmount(), t.getCurrency(), userCurrency))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         BigDecimal netBalance = totalIncome.subtract(totalExpenses);
@@ -68,7 +72,8 @@ public class AnalyticsService {
         for (Transaction t : transactions) {
             if (t.getType() == TransactionType.EXPENSE) {
                 String category = t.getCategory().getName();
-                byCategory.merge(category, t.getAmount(), BigDecimal::add);
+                byCategory.merge(category, convertAmount(
+                        t.getAmount(), t.getCurrency(), user.getCurrency()), BigDecimal::add);
             }
         }
 
@@ -87,14 +92,16 @@ public class AnalyticsService {
             List<Transaction> transactions = transactionRepository
                     .findByUserIdAndDateBetween(user.getId(), start, end);
 
+            Currency userCurrency = user.getCurrency();
+
             BigDecimal income = transactions.stream()
                     .filter(t -> t.getType() == TransactionType.INCOME)
-                    .map(Transaction::getAmount)
+                    .map(t -> convertAmount(t.getAmount(), t.getCurrency(), userCurrency))
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
 
             BigDecimal expenses = transactions.stream()
                     .filter(t -> t.getType() == TransactionType.EXPENSE)
-                    .map(Transaction::getAmount)
+                    .map(t -> convertAmount(t.getAmount(), t.getCurrency(), userCurrency))
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
 
             Map<String, Object> month = new HashMap<>();
@@ -119,5 +126,9 @@ public class AnalyticsService {
         result.put("category", topCategory);
         result.put("amount", byCategory.get(topCategory));
         return result;
+    }
+
+    private BigDecimal convertAmount(BigDecimal amount, Currency fromCurrency, Currency toCurrency) {
+        return exchangeRateService.convert(amount, fromCurrency.name(), toCurrency.name());
     }
 }
