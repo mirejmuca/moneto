@@ -14,7 +14,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -37,24 +36,29 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         final String token = authHeader.substring(7);
-        final String email = jwtService.extractEmail(token);
 
-        if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            userRepository.findByEmail(email).ifPresent(user -> {
-                if (jwtService.isTokenValid(token)) {
-                    UserDetails userDetails = org.springframework.security.core.userdetails.User
-                            .withUsername(user.getEmail())
-                            .password(user.getPassword())
-                            .authorities("USER")
-                            .build();
+        try {
+            final String email = jwtService.extractEmail(token);
 
-                    UsernamePasswordAuthenticationToken authToken =
-                            new UsernamePasswordAuthenticationToken(
-                                    userDetails, null, userDetails.getAuthorities());
-                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
-                }
-            });
+            if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                userRepository.findByEmail(email).ifPresent(user -> {
+                    if (jwtService.isTokenValid(token)) {
+                        UserDetails userDetails = org.springframework.security.core.userdetails.User
+                                .withUsername(user.getEmail())
+                                .password(user.getPassword())
+                                .authorities("USER")
+                                .build();
+
+                        UsernamePasswordAuthenticationToken authToken =
+                                new UsernamePasswordAuthenticationToken(
+                                        userDetails, null, userDetails.getAuthorities());
+                        authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                        SecurityContextHolder.getContext().setAuthentication(authToken);
+                    }
+                });
+            }
+        } catch (Exception e) {
+            // Token i pavlefshëm ose i skaduar — thjesht vazhdo pa autentifikim
         }
 
         filterChain.doFilter(request, response);

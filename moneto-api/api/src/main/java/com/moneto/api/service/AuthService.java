@@ -26,8 +26,9 @@ public class AuthService {
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
+    private final EmailService emailService;
 
-    public AuthResponse register(RegisterRequest request) {
+    public void register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email already in use");
         }
@@ -37,15 +38,23 @@ public class AuthService {
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setCurrency(request.getCurrency());
+        user.setIsVerified(false);
+        user.setVerificationToken(generateVerificationCode());
 
         userRepository.save(user);
         createDefaultCategories(user);
 
-        String token = jwtService.generateToken(user.getEmail());
-        return new AuthResponse(token, user.getName(), user.getEmail(), user.getCurrency());
+        emailService.sendVerificationEmail(user.getEmail(), user.getVerificationToken());
     }
 
     public AuthResponse login(LoginRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!user.getIsVerified()) {
+            throw new RuntimeException("Please verify your email before logging in");
+        }
+
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getEmail(),
@@ -53,11 +62,30 @@ public class AuthService {
                 )
         );
 
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
         String token = jwtService.generateToken(user.getEmail());
         return new AuthResponse(token, user.getName(), user.getEmail(), user.getCurrency());
+    }
+
+    public void verify(String email, String code) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (user.getIsVerified()) {
+            throw new RuntimeException("Account already verified");
+        }
+
+        if (!code.equals(user.getVerificationToken())) {
+            throw new RuntimeException("Invalid verification code");
+        }
+
+        user.setIsVerified(true);
+        user.setVerificationToken(null);
+        userRepository.save(user);
+    }
+
+    private String generateVerificationCode() {
+        int code = (int) (Math.random() * 900000) + 100000;
+        return String.valueOf(code);
     }
 
     private void createDefaultCategories(User user) {

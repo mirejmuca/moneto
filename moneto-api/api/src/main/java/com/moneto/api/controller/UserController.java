@@ -39,4 +39,10 @@ public class UserController {
                                                @RequestParam(required = false) Boolean recurringReminders) {
         return ResponseEntity.ok(userService.updateSettings(currency, monthStart, budgetAlerts, recurringReminders));
     }
+
+    @DeleteMapping("/account")
+    public ResponseEntity<String> deleteAccount() {
+        userService.deleteAccount();
+        return ResponseEntity.ok("Account deleted successfully");
+    }
 }

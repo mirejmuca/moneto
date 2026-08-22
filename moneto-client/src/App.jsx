@@ -8,6 +8,10 @@ import Budgets from './pages/Budgets'
 import Goals from './pages/Goals'
 import Settings from './pages/Settings'
 import Categories from './pages/Categories'
+import Recurring from './pages/Recurring'
+import Notifications from './pages/Notifications'
+import Verify from './pages/Verify'
+import Subscription from './pages/Subscription'
 
 const ProtectedRoute = ({ children }) => {
   const { token } = useAuth()
@@ -47,6 +51,22 @@ function App() {
       <Route path="/categories" element={
         <ProtectedRoute>
           <Categories />
+        </ProtectedRoute>
+      } />
+      <Route path="/recurring" element={
+        <ProtectedRoute>
+          <Recurring />
+        </ProtectedRoute>
+      } />
+      <Route path="/notifications" element={
+        <ProtectedRoute>
+         <Notifications />
+      </ProtectedRoute>
+      } />
+      <Route path="/verify" element={<Verify />} />
+      <Route path="/subscription" element={
+        <ProtectedRoute>
+          <Subscription />
         </ProtectedRoute>
 } />
     </Routes>

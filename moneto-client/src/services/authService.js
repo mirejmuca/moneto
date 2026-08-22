@@ -9,3 +9,8 @@ export const login = async (data) => {
     const response = await api.post('/auth/login', data);
     return response.data;
 };
+
+export const verify = async (email, code) => {
+    const response = await api.post('/auth/verify', null, { params: { email, code } });
+    return response.data;
+};

@@ -19,3 +19,7 @@ export const updateSettings = async (data) => {
     const response = await api.put('/user/settings', null, { params: data });
     return response.data;
 };
+
+export const deleteAccount = async () => {
+    await api.delete('/user/account');
+};

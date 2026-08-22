@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import Navbar from '../components/Navbar'
-import { getProfile, updateProfile, changePassword, updateSettings } from '../services/userService'
+import { useAuth } from '../context/AuthContext'
+import { getProfile, updateProfile, changePassword, updateSettings, deleteAccount } from '../services/userService'
 
 export default function Settings() {
   const [profile, setProfile] = useState(null)
@@ -11,6 +13,19 @@ export default function Settings() {
   const [profileMsg, setProfileMsg] = useState('')
   const [passwordMsg, setPasswordMsg] = useState('')
   const [settingsMsg, setSettingsMsg] = useState('')
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+const { logout } = useAuth()
+const navigate = useNavigate()
+
+const handleDeleteAccount = async () => {
+  try {
+    await deleteAccount()
+    logout()
+    navigate('/register')
+  } catch (err) {
+    console.error(err)
+  }
+}
 
   useEffect(() => {
     fetchProfile()
@@ -181,6 +196,33 @@ export default function Settings() {
               Save Settings
             </button>
           </form>
+        </div>
+                {/* Danger Zone */}
+        <div className="bg-gray-900 rounded-2xl p-6 border border-red-900">
+          <h2 className="text-lg font-semibold mb-2 text-red-400">Danger Zone</h2>
+          <p className="text-gray-400 text-sm mb-4">
+            Deleting your account is permanent. All your transactions, budgets, goals, and data will be permanently removed.
+          </p>
+          {!showDeleteConfirm ? (
+            <button onClick={() => setShowDeleteConfirm(true)}
+              className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg text-sm font-semibold transition">
+              Delete Account
+            </button>
+          ) : (
+            <div className="space-y-3">
+              <p className="text-white text-sm font-semibold">Are you absolutely sure? This cannot be undone.</p>
+              <div className="flex gap-3">
+                <button onClick={handleDeleteAccount}
+                  className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg text-sm font-semibold transition">
+                  Yes, delete my account
+                </button>
+                <button onClick={() => setShowDeleteConfirm(false)}
+                  className="bg-gray-700 hover:bg-gray-600 text-white px-6 py-2 rounded-lg text-sm font-semibold transition">
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

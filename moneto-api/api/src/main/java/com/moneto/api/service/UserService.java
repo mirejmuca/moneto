@@ -1,11 +1,20 @@
 package com.moneto.api.service;
 
+import com.moneto.api.model.Budget;
+import com.moneto.api.model.Currency;
+import com.moneto.api.model.SavingGoal;
+import com.moneto.api.model.SavingGoalStatus;
 import com.moneto.api.model.User;
-import com.moneto.api.repository.UserRepository;
+import com.moneto.api.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.util.List;
+
 
 @Service
 @RequiredArgsConstructor
@@ -13,6 +22,13 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final BudgetRepository budgetRepository;
+    private final SavingGoalRepository savingGoalRepository;
+    private final ExchangeRateService exchangeRateService;
+    private final TransactionRepository transactionRepository;
+    private final CategoryRepository categoryRepository;
+    private final RecurringTransactionRepository recurringTransactionRepository;
+    private final NotificationRepository notificationRepository;
 
     public User getCurrentUser() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -39,10 +55,57 @@ public class UserService {
     public User updateSettings(String currency, Integer monthStart,
                                Boolean budgetAlerts, Boolean recurringReminders) {
         User user = getCurrentUser();
-        if (currency != null) user.setCurrency(com.moneto.api.model.Currency.valueOf(currency));
+
+        if (currency != null) {
+            Currency oldCurrency = user.getCurrency();
+            Currency newCurrency = Currency.valueOf(currency);
+
+            if (oldCurrency != newCurrency) {
+                convertActiveData(user, oldCurrency, newCurrency);
+                user.setCurrency(newCurrency);
+            }
+        }
+
         if (monthStart != null) user.setMonthStart(monthStart);
         if (budgetAlerts != null) user.setBudgetAlerts(budgetAlerts);
         if (recurringReminders != null) user.setRecurringReminders(recurringReminders);
         return userRepository.save(user);
+    }
+
+    @Transactional
+    public void deleteAccount() {
+        User user = getCurrentUser();
+        Long userId = user.getId();
+
+        transactionRepository.deleteAll(transactionRepository.findByUserId(userId));
+        budgetRepository.deleteAll(budgetRepository.findByUserId(userId));
+        recurringTransactionRepository.deleteAll(recurringTransactionRepository.findByUserId(userId));
+        savingGoalRepository.deleteAll(savingGoalRepository.findByUserId(userId));
+        notificationRepository.deleteAll(notificationRepository.findByUserId(userId));
+        categoryRepository.deleteAll(categoryRepository.findByUserId(userId));
+
+        userRepository.delete(user);
+    }
+
+    private void convertActiveData(User user, Currency from, Currency to) {
+        List<Budget> budgets = budgetRepository.findByUserId(user.getId());
+        for (Budget budget : budgets) {
+            BigDecimal converted = exchangeRateService.convert(
+                    budget.getAmount(), from.name(), to.name());
+            budget.setAmount(converted);
+            budgetRepository.save(budget);
+        }
+
+        List<SavingGoal> goals = savingGoalRepository
+                .findByUserIdAndStatus(user.getId(), SavingGoalStatus.IN_PROGRESS);
+        for (SavingGoal goal : goals) {
+            BigDecimal convertedTarget = exchangeRateService.convert(
+                    goal.getTargetAmount(), from.name(), to.name());
+            BigDecimal convertedCurrent = exchangeRateService.convert(
+                    goal.getCurrentAmount(), from.name(), to.name());
+            goal.setTargetAmount(convertedTarget);
+            goal.setCurrentAmount(convertedCurrent);
+            savingGoalRepository.save(goal);
+        }
     }
 }
