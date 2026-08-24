@@ -40,6 +40,7 @@ export default function Navbar() {
           <Link to="/settings" className="text-gray-400 hover:text-white text-sm transition">Settings</Link>
           <Link to="/subscription" className="text-gray-400 hover:text-white text-sm transition">Premium</Link>
           <Link to="/forecast" className="text-gray-400 hover:text-white text-sm transition">Forecast</Link>
+          <Link to="/insights" className="text-gray-400 hover:text-white text-sm transition">Insights</Link>
         </div>
       </div>
       <div className="flex items-center gap-5">
