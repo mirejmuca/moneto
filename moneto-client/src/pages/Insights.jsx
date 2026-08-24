@@ -4,11 +4,13 @@ import Navbar from '../components/Navbar'
 import { getInsights } from '../services/insightsService'
 import { useAuth } from '../context/AuthContext'
 import { getCurrencySymbol } from '../utils/currency'
+import { downloadReport } from '../services/reportService'
 
 export default function Insights() {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [locked, setLocked] = useState(false)
+  const [downloading, setDownloading] = useState(false)
   const { user } = useAuth()
   const navigate = useNavigate()
   const symbol = getCurrencySymbol(user?.currency)
@@ -37,6 +39,19 @@ export default function Insights() {
     </div>
   )
 
+  
+
+  const handleDownload = async () => {
+  setDownloading(true)
+  try {
+    await downloadReport()
+  } catch (err) {
+    console.error(err)
+  } finally {
+    setDownloading(false)
+  }
+}
+
   if (locked) {
     return (
       <div className="min-h-screen bg-gray-950 text-white">
@@ -60,7 +75,13 @@ export default function Insights() {
     <div className="min-h-screen bg-gray-950 text-white">
       <Navbar />
       <div className="max-w-4xl mx-auto px-8 py-8">
-        <h1 className="text-2xl font-bold mb-6">Advanced Insights</h1>
+        <div className="flex justify-between items-center mb-6">
+            <h1 className="text-2xl font-bold">Advanced Insights</h1>
+            <button onClick={handleDownload} disabled={downloading}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition">
+                {downloading ? 'Generating...' : '↓ Download PDF Report'}
+            </button>
+</div>
 
         <div className="grid grid-cols-2 gap-4">
           {/* Month over month */}
