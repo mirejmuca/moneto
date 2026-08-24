@@ -12,6 +12,7 @@ import Recurring from './pages/Recurring'
 import Notifications from './pages/Notifications'
 import Verify from './pages/Verify'
 import Subscription from './pages/Subscription'
+import Forecast from './pages/Forecast'
 
 const ProtectedRoute = ({ children }) => {
   const { token } = useAuth()
@@ -67,6 +68,11 @@ function App() {
       <Route path="/subscription" element={
         <ProtectedRoute>
           <Subscription />
+        </ProtectedRoute>
+      } />
+      <Route path="/forecast" element={
+        <ProtectedRoute>
+          <Forecast />
         </ProtectedRoute>
 } />
     </Routes>

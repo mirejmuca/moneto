@@ -39,6 +39,7 @@ export default function Navbar() {
           <Link to="/recurring" className="text-gray-400 hover:text-white text-sm transition">Recurring</Link>
           <Link to="/settings" className="text-gray-400 hover:text-white text-sm transition">Settings</Link>
           <Link to="/subscription" className="text-gray-400 hover:text-white text-sm transition">Premium</Link>
+          <Link to="/forecast" className="text-gray-400 hover:text-white text-sm transition">Forecast</Link>
         </div>
       </div>
       <div className="flex items-center gap-5">
