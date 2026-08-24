@@ -63,7 +63,7 @@ public class AuthService {
         );
 
         String token = jwtService.generateToken(user.getEmail());
-        return new AuthResponse(token, user.getName(), user.getEmail(), user.getCurrency());
+        return new AuthResponse(token, user.getName(), user.getEmail(), user.getCurrency(), user.getRole());
     }
 
     public void verify(String email, String code) {

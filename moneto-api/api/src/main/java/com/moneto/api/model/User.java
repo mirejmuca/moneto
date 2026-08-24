@@ -48,4 +48,8 @@ public class User {
 
     @Column(name = "subscription_expires_at")
     private LocalDate subscriptionExpiresAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false)
+    private Role role = Role.USER;
 }

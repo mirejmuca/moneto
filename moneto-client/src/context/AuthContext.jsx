@@ -14,10 +14,11 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = (data) => {
+    const userData = { name: data.name, email: data.email, currency: data.currency, role: data.role };
     localStorage.setItem('token', data.token);
-    localStorage.setItem('user', JSON.stringify({ name: data.name, email: data.email, currency: data.currency }));
+    localStorage.setItem('user', JSON.stringify(userData));
     setToken(data.token);
-    setUser({ name: data.name, email: data.email, currency: data.currency });
+    setUser(userData);
   };
 
   const logout = () => {

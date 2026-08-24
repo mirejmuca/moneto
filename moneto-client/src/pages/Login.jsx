@@ -18,7 +18,11 @@ export default function Login() {
     try {
       const data = await loginService({ email, password })
       login(data)
-      navigate('/')
+      if (data.role === 'ADMIN' || data.role === 'MODERATOR') {
+        navigate('/admin')
+      } else {
+        navigate('/')
+      }
     } catch (err) {
       setError('Invalid email or password')
     } finally {

@@ -14,6 +14,7 @@ import Verify from './pages/Verify'
 import Subscription from './pages/Subscription'
 import Forecast from './pages/Forecast'
 import Insights from './pages/Insights'
+import Admin from './pages/Admin'
 
 const ProtectedRoute = ({ children }) => {
   const { token } = useAuth()
@@ -78,7 +79,12 @@ function App() {
       } />
       <Route path="/insights" element={
         <ProtectedRoute>
-         <Insights />
+          <Insights />
+        </ProtectedRoute>
+      } />
+      <Route path="/admin" element={
+        <ProtectedRoute>
+          <Admin />
         </ProtectedRoute>
       } />
     </Routes>
