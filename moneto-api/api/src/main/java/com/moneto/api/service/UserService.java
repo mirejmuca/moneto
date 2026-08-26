@@ -11,6 +11,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.moneto.api.model.Alert;
+import com.moneto.api.model.AlertType;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -29,6 +31,7 @@ public class UserService {
     private final CategoryRepository categoryRepository;
     private final RecurringTransactionRepository recurringTransactionRepository;
     private final NotificationRepository notificationRepository;
+    private final AlertRepository alertRepository;
 
     public User getCurrentUser() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -106,6 +109,18 @@ public class UserService {
             goal.setTargetAmount(convertedTarget);
             goal.setCurrentAmount(convertedCurrent);
             savingGoalRepository.save(goal);
+        }
+
+        // Konverto pragjet e alerteve aktive
+        List<Alert> alerts = alertRepository.findByUserIdAndActiveTrue(user.getId());
+        for (Alert alert : alerts) {
+            // Alerti i bilancit negativ s'ka prag për të konvertuar
+            if (alert.getType() == AlertType.NEGATIVE_BALANCE) continue;
+
+            BigDecimal converted = exchangeRateService.convert(
+                    alert.getThreshold(), from.name(), to.name());
+            alert.setThreshold(converted);
+            alertRepository.save(alert);
         }
     }
 }

@@ -18,6 +18,8 @@ public class TransactionService {
     private final BudgetRepository budgetRepository;
     private final NotificationRepository notificationRepository;
     private final UserService userService;
+    private final AlertService alertService;
+
 
     public List<Transaction> getAllTransactions() {
         User user = userService.getCurrentUser();
@@ -57,6 +59,9 @@ public class TransactionService {
         if (type == TransactionType.EXPENSE) {
             checkBudget(user, category, amount);
         }
+
+        // Kontrollo alertet e personalizuara (PREMIUM)
+        alertService.checkAlerts(user, saved);
 
         return saved;
     }

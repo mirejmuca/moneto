@@ -25,6 +25,14 @@ public class NotificationService {
         return notificationRepository.findByUserIdAndIsReadFalse(user.getId());
     }
 
+    public Notification createNotification(User user, String message) {
+        Notification notification = new Notification();
+        notification.setUser(user);
+        notification.setMessage(message);
+        notification.setIsRead(false);
+        return notificationRepository.save(notification);
+    }
+
     public Notification markAsRead(Long id) {
         Notification notification = notificationRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Notification not found"));
