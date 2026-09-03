@@ -16,6 +16,8 @@ import Forecast from './pages/Forecast'
 import Insights from './pages/Insights'
 import Admin from './pages/Admin'
 import Alerts from './pages/Alerts'
+import Chatbot from './pages/Chatbot'
+import Activity from './pages/Activity'
 
 const ProtectedRoute = ({ children }) => {
   const { token } = useAuth()
@@ -92,7 +94,17 @@ function App() {
         <ProtectedRoute>
          <Alerts />
       </ProtectedRoute>
-} />
+      } />
+      <Route path="/chatbot" element={
+        <ProtectedRoute>
+          <Chatbot />
+        </ProtectedRoute>
+      } />
+      <Route path="/activity" element={
+        <ProtectedRoute>
+         <Activity />
+        </ProtectedRoute>
+      } />
     </Routes>
   )
 }

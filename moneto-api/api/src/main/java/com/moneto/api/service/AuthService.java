@@ -27,6 +27,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final EmailService emailService;
+    private final AuditService auditService;
 
     public void register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
@@ -45,6 +46,8 @@ public class AuthService {
         createDefaultCategories(user);
 
         emailService.sendVerificationEmail(user.getEmail(), user.getVerificationToken());
+
+        auditService.log(user.getEmail(), "REGISTER", null);
     }
 
     public AuthResponse login(LoginRequest request) {
@@ -63,6 +66,9 @@ public class AuthService {
         );
 
         String token = jwtService.generateToken(user.getEmail());
+
+        auditService.log(user.getEmail(), "LOGIN", null);
+
         return new AuthResponse(token, user.getName(), user.getEmail(), user.getCurrency(), user.getRole());
     }
 

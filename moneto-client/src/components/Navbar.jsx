@@ -79,6 +79,9 @@ export default function Navbar() {
         </div>
       </div>
       <div className="flex items-center gap-5">
+        <Link to="/chatbot" className="flex items-center gap-1.5 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white text-sm font-medium px-3 py-1.5 rounded-lg transition">
+          ✨ AI Assistant
+        </Link>
         <Link to="/subscription" className="text-yellow-400 hover:text-yellow-300 text-sm font-medium transition">Premium</Link>
         <Link to="/notifications" className="relative text-gray-400 hover:text-white transition">
           <Bell size={20} />
@@ -90,6 +93,7 @@ export default function Navbar() {
         </Link>
         <Dropdown label={`Hello, ${user?.name || ''}`}>
           <Link to="/settings" className={dropdownLink}>Settings</Link>
+          <Link to="/activity" className={dropdownLink}>My Activity</Link>
           <button onClick={handleLogout} className={`${dropdownLink} w-full text-left text-red-400 hover:text-red-300`}>Logout</button>
         </Dropdown>
       </div>

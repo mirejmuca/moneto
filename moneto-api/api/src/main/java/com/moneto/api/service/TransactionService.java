@@ -19,6 +19,7 @@ public class TransactionService {
     private final NotificationRepository notificationRepository;
     private final UserService userService;
     private final AlertService alertService;
+    private final AuditService auditService;
 
 
     public List<Transaction> getAllTransactions() {
@@ -63,6 +64,9 @@ public class TransactionService {
         // Kontrollo alertet e personalizuara (PREMIUM)
         alertService.checkAlerts(user, saved);
 
+        auditService.logCurrentUser("CREATE_TRANSACTION",
+                type + " of " + amount + " " + (currency != null ? currency : Currency.USD));
+
         return saved;
     }
 
@@ -78,6 +82,7 @@ public class TransactionService {
 
     public void deleteTransaction(Long id) {
         transactionRepository.deleteById(id);
+        auditService.logCurrentUser("DELETE_TRANSACTION", "Deleted transaction id=" + id);
     }
 
     private void checkBudget(User user, Category category, BigDecimal amount) {

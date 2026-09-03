@@ -16,6 +16,7 @@ public class SubscriptionService {
 
     private final UserRepository userRepository;
     private final UserService userService;
+    private final AuditService auditService;
 
     public Map<String, Object> getSubscriptionStatus() {
         User user = userService.getCurrentUser();
@@ -49,6 +50,8 @@ public class SubscriptionService {
         result.put("tier", tier.name());
         result.put("expiresAt", newExpiry);
         result.put("message", "Subscription activated successfully");
+
+        auditService.logCurrentUser("SUBSCRIBE", "Subscribed to " + tier);
         return result;
     }
 
@@ -57,6 +60,7 @@ public class SubscriptionService {
         user.setSubscriptionTier(SubscriptionTier.FREE);
         user.setSubscriptionExpiresAt(null);
         userRepository.save(user);
+        auditService.logCurrentUser("CANCEL_SUBSCRIPTION", null);
     }
 
     // Kthen nivelin efektiv duke marrë parasysh skadimin

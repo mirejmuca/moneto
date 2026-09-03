@@ -25,6 +25,7 @@ public class AdminService {
     private final CategoryRepository categoryRepository;
     private final SubscriptionService subscriptionService;
     private final UserService userService;
+    private final AuditService auditService;
 
 
     public List<Map<String, Object>> getAllUsers() {
@@ -91,6 +92,8 @@ public class AdminService {
         }
 
         userRepository.save(target);
+
+        auditService.logCurrentUser("CHANGE_ROLE", "User id=" + userId + " → " + newRole);
     }
 
     private void requireStaff() {
@@ -124,6 +127,8 @@ public class AdminService {
         if (target.getRole() == Role.MODERATOR && currentUser.getRole() != Role.ADMIN) {
             throw new RuntimeException("Only an admin can delete a moderator");
         }
+
+        auditService.logCurrentUser("DELETE_USER", "Deleted user id=" + userId + " (" + target.getEmail() + ")");
 
         transactionRepository.deleteAll(transactionRepository.findByUserId(userId));
         budgetRepository.deleteAll(budgetRepository.findByUserId(userId));

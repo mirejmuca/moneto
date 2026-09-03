@@ -32,6 +32,7 @@ public class UserService {
     private final RecurringTransactionRepository recurringTransactionRepository;
     private final NotificationRepository notificationRepository;
     private final AlertRepository alertRepository;
+    private final AuditService auditService;
 
     public User getCurrentUser() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -79,6 +80,8 @@ public class UserService {
     public void deleteAccount() {
         User user = getCurrentUser();
         Long userId = user.getId();
+
+        auditService.log(user.getEmail(), "DELETE_ACCOUNT", null);
 
         transactionRepository.deleteAll(transactionRepository.findByUserId(userId));
         budgetRepository.deleteAll(budgetRepository.findByUserId(userId));
