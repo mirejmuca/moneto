@@ -18,6 +18,7 @@ import Admin from './pages/Admin'
 import Alerts from './pages/Alerts'
 import Chatbot from './pages/Chatbot'
 import Activity from './pages/Activity'
+import Import from './pages/Import'
 
 const ProtectedRoute = ({ children }) => {
   const { token } = useAuth()
@@ -103,6 +104,11 @@ function App() {
       <Route path="/activity" element={
         <ProtectedRoute>
          <Activity />
+        </ProtectedRoute>
+      } />
+      <Route path="/import" element={
+        <ProtectedRoute>
+          <Import />
         </ProtectedRoute>
       } />
     </Routes>

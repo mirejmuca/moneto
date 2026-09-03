@@ -75,6 +75,7 @@ export default function Navbar() {
           <Dropdown label="More">
             <Link to="/categories" className={dropdownLink}>Categories</Link>
             <Link to="/recurring" className={dropdownLink}>Recurring</Link>
+            <Link to="/import" className={dropdownLink}>Import</Link>
           </Dropdown>
         </div>
       </div>
