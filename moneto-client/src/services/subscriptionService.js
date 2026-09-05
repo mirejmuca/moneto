@@ -5,8 +5,10 @@ export const getSubscriptionStatus = async () => {
     return response.data;
 };
 
-export const subscribe = async (tier) => {
-    const response = await api.post('/subscription/subscribe', null, { params: { tier } });
+export const subscribe = async (tier, cardLast4) => {
+    const params = { tier };
+    if (cardLast4) params.cardLast4 = cardLast4;
+    const response = await api.post('/subscription/subscribe', null, { params });
     return response.data;
 };
 

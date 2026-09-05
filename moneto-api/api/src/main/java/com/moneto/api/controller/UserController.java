@@ -1,5 +1,6 @@
 package com.moneto.api.controller;
 
+import com.moneto.api.dto.UserDto;
 import com.moneto.api.model.User;
 import com.moneto.api.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -9,20 +10,20 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/user")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "http://localhost:5173")
 public class UserController {
 
     private final UserService userService;
 
     @GetMapping("/profile")
-    public ResponseEntity<User> getProfile() {
-        return ResponseEntity.ok(userService.getCurrentUser());
+    public ResponseEntity<UserDto> getProfile() {
+        return ResponseEntity.ok(toDto(userService.getCurrentUser()));
     }
 
     @PutMapping("/profile")
-    public ResponseEntity<User> updateProfile(@RequestParam String name,
-                                              @RequestParam String email) {
-        return ResponseEntity.ok(userService.updateProfile(name, email));
+    public ResponseEntity<UserDto> updateProfile(@RequestParam String name,
+                                                 @RequestParam String email) {
+        return ResponseEntity.ok(toDto(userService.updateProfile(name, email)));
     }
 
     @PutMapping("/password")
@@ -33,16 +34,32 @@ public class UserController {
     }
 
     @PutMapping("/settings")
-    public ResponseEntity<User> updateSettings(@RequestParam(required = false) String currency,
-                                               @RequestParam(required = false) Integer monthStart,
-                                               @RequestParam(required = false) Boolean budgetAlerts,
-                                               @RequestParam(required = false) Boolean recurringReminders) {
-        return ResponseEntity.ok(userService.updateSettings(currency, monthStart, budgetAlerts, recurringReminders));
+    public ResponseEntity<UserDto> updateSettings(@RequestParam(required = false) String currency,
+                                                  @RequestParam(required = false) Integer monthStart,
+                                                  @RequestParam(required = false) Boolean budgetAlerts,
+                                                  @RequestParam(required = false) Boolean recurringReminders) {
+        return ResponseEntity.ok(toDto(userService.updateSettings(currency, monthStart, budgetAlerts, recurringReminders)));
     }
 
     @DeleteMapping("/account")
     public ResponseEntity<String> deleteAccount() {
         userService.deleteAccount();
         return ResponseEntity.ok("Account deleted successfully");
+    }
+
+    private UserDto toDto(User user) {
+        return new UserDto(
+                user.getId(),
+                user.getName(),
+                user.getEmail(),
+                user.getCurrency(),
+                user.getMonthStart(),
+                user.getBudgetAlerts(),
+                user.getRecurringReminders(),
+                user.getIsVerified(),
+                user.getRole(),
+                user.getSubscriptionTier(),
+                user.getSubscriptionExpiresAt()
+        );
     }
 }

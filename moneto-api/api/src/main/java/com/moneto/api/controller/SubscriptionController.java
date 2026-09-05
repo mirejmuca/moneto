@@ -22,8 +22,10 @@ public class SubscriptionController {
     }
 
     @PostMapping("/subscribe")
-    public ResponseEntity<Map<String, Object>> subscribe(@RequestParam SubscriptionTier tier) {
-        return ResponseEntity.ok(subscriptionService.subscribe(tier));
+    public ResponseEntity<Map<String, Object>> subscribe(
+            @RequestParam SubscriptionTier tier,
+            @RequestParam(required = false) String cardLast4) {
+        return ResponseEntity.ok(subscriptionService.subscribe(tier, cardLast4));
     }
 
     @PostMapping("/cancel")

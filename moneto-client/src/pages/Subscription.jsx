@@ -53,7 +53,10 @@ export default function Subscription() {
     setProcessing(true)
     try {
       await new Promise(resolve => setTimeout(resolve, 1500))
-      await subscribe(selectedTier.tier)
+      // Nxirr 4 shifrat e fundit të kartës (vetëm shifrat, pastaj 4 të fundit)
+      const digits = card.number.replace(/\D/g, '')
+      const last4 = digits.slice(-4)
+      await subscribe(selectedTier.tier, last4)
       setSelectedTier(null)
       setCard({ number: '', name: '', expiry: '', cvc: '' })
       fetchStatus()

@@ -45,8 +45,11 @@ public class AuthService {
         userRepository.save(user);
         createDefaultCategories(user);
 
-        emailService.sendVerificationEmail(user.getEmail(), user.getVerificationToken());
-
+        try {
+            emailService.sendVerificationEmail(user.getEmail(), user.getVerificationToken());
+        } catch (Exception e) {
+            System.out.println("Warning: verification email could not be sent: " + e.getMessage());
+        }
         auditService.log(user.getEmail(), "REGISTER", null);
     }
 
