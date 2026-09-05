@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { getAllUsers, getStats, deleteUser, changeRole } from '../services/adminService'
-import { getAuditLogs } from '../services/auditService'
+import { getAuditLogs, getUserAudit } from '../services/auditService'
 
 export default function Admin() {
   const [tab, setTab] = useState('users')
@@ -12,6 +12,9 @@ export default function Admin() {
   const [loading, setLoading] = useState(true)
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const [auditModal, setAuditModal] = useState(null) // email i përdoruesit që po shohim
+  const [userLogs, setUserLogs] = useState([])
+  const [modalLoading, setModalLoading] = useState(false)
 
   const isAdmin = user?.role === 'ADMIN'
 
@@ -60,6 +63,20 @@ export default function Admin() {
       fetchData()
     } catch (err) {
       alert(err.response?.data || 'Failed to change role')
+    }
+  }
+
+  const openAudit = async (email) => {
+    setAuditModal(email)
+    setModalLoading(true)
+    setUserLogs([])
+    try {
+      const data = await getUserAudit(email)
+      setUserLogs(data.content)
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setModalLoading(false)
     }
   }
 
@@ -166,6 +183,8 @@ export default function Admin() {
                       </td>
                       <td className="py-3">{u.verified ? '✓' : '—'}</td>
                       <td className="py-3 text-right space-x-2">
+                        <button onClick={() => openAudit(u.email)}
+                          className="text-blue-400 hover:text-blue-300 text-xs">Activity</button>
                         {isAdmin && u.role !== 'ADMIN' && (
                           u.role === 'MODERATOR' ? (
                             <button onClick={() => handleRoleChange(u.id, 'USER')}
@@ -220,6 +239,53 @@ export default function Admin() {
           </div>
         )}
       </div>
+
+      {/* Audit modal */}
+      {auditModal && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 px-4"
+          onClick={() => setAuditModal(null)}>
+          <div className="bg-gray-900 rounded-2xl p-6 max-w-2xl w-full max-h-[80vh] overflow-hidden flex flex-col"
+            onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-4">
+              <div>
+                <h2 className="text-lg font-semibold">User Activity</h2>
+                <p className="text-gray-500 text-sm">{auditModal}</p>
+              </div>
+              <button onClick={() => setAuditModal(null)}
+                className="text-gray-400 hover:text-white text-xl leading-none">×</button>
+            </div>
+
+            <div className="overflow-y-auto flex-1">
+              {modalLoading ? (
+                <p className="text-gray-400 text-sm">Loading...</p>
+              ) : userLogs.length === 0 ? (
+                <p className="text-gray-500 text-sm">No activity recorded for this user.</p>
+              ) : (
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-gray-500 text-left border-b border-gray-800">
+                      <th className="pb-2">Time</th>
+                      <th className="pb-2">Action</th>
+                      <th className="pb-2">Details</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {userLogs.map(log => (
+                      <tr key={log.id} className="border-b border-gray-800/50">
+                        <td className="py-2 text-gray-400 whitespace-nowrap">{formatDate(log.createdAt)}</td>
+                        <td className="py-2">
+                          <span className="text-blue-400 font-mono text-xs">{log.action}</span>
+                        </td>
+                        <td className="py-2 text-gray-400">{log.details || '—'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
