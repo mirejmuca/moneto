@@ -17,3 +17,7 @@ export const deleteUser = async (userId) => {
 export const changeRole = async (userId, role) => {
     await api.put(`/admin/users/${userId}/role`, null, { params: { role } });
 };
+
+export const changeSubscription = async (userId, tier) => {
+    await api.put(`/admin/users/${userId}/subscription`, null, { params: { tier } });
+};

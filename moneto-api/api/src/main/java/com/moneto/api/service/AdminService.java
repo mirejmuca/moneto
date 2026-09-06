@@ -138,4 +138,28 @@ public class AdminService {
         categoryRepository.deleteAll(categoryRepository.findByUserId(userId));
         userRepository.delete(target);
     }
+
+    public void changeSubscription(Long userId, SubscriptionTier newTier) {
+        requireAdmin(); // vetëm admin
+
+        User target = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Vetëm përdoruesit normalë kanë plan pagese (jo stafi)
+        if (target.getRole() != Role.USER) {
+            throw new RuntimeException("Only regular users can have a subscription");
+        }
+
+        target.setSubscriptionTier(newTier);
+        // Nëse kalon në një plan me pagesë, vendos skadimin një muaj nga tani; nëse FREE, hiqe
+        if (newTier == SubscriptionTier.FREE) {
+            target.setSubscriptionExpiresAt(null);
+        } else {
+            target.setSubscriptionExpiresAt(java.time.LocalDate.now().plusMonths(1));
+        }
+        userRepository.save(target);
+
+        auditService.logCurrentUser("CHANGE_SUBSCRIPTION",
+                "User id=" + userId + " → " + newTier);
+    }
 }

@@ -1,6 +1,7 @@
 package com.moneto.api.controller;
 
 import com.moneto.api.model.Role;
+import com.moneto.api.model.SubscriptionTier;
 import com.moneto.api.service.AdminService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -37,5 +38,12 @@ public class AdminController {
     public ResponseEntity<String> deleteUser(@PathVariable Long userId) {
         adminService.deleteUser(userId);
         return ResponseEntity.ok("User deleted successfully");
+    }
+
+    @PutMapping("/users/{userId}/subscription")
+    public ResponseEntity<String> changeSubscription(@PathVariable Long userId,
+                                                     @RequestParam SubscriptionTier tier) {
+        adminService.changeSubscription(userId, tier);
+        return ResponseEntity.ok("Subscription updated successfully");
     }
 }

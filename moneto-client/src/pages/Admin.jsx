@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { getAllUsers, getStats, deleteUser, changeRole } from '../services/adminService'
+import { getAllUsers, getStats, deleteUser, changeRole, changeSubscription } from '../services/adminService'
 import { getAuditLogs, getUserAudit } from '../services/auditService'
 
 export default function Admin() {
@@ -12,7 +12,7 @@ export default function Admin() {
   const [loading, setLoading] = useState(true)
   const { user, logout } = useAuth()
   const navigate = useNavigate()
-  const [auditModal, setAuditModal] = useState(null) // email i përdoruesit që po shohim
+  const [auditModal, setAuditModal] = useState(null)
   const [userLogs, setUserLogs] = useState([])
   const [modalLoading, setModalLoading] = useState(false)
 
@@ -63,6 +63,15 @@ export default function Admin() {
       fetchData()
     } catch (err) {
       alert(err.response?.data || 'Failed to change role')
+    }
+  }
+
+  const handleSubscriptionChange = async (userId, newTier) => {
+    try {
+      await changeSubscription(userId, newTier)
+      fetchData()
+    } catch (err) {
+      alert(err.response?.data?.error || 'Failed to change subscription')
     }
   }
 
@@ -172,9 +181,19 @@ export default function Admin() {
                       <td className="py-3">{u.name}</td>
                       <td className="py-3 text-gray-400">{u.email}</td>
                       <td className="py-3">
-                        <span className={u.tier === 'PREMIUM' ? 'text-yellow-400' : u.tier === 'PLUS' ? 'text-blue-400' : 'text-gray-400'}>
-                          {u.tier}
-                        </span>
+                        {isAdmin && u.role === 'USER' ? (
+                          <select value={u.tier}
+                            onChange={(e) => handleSubscriptionChange(u.id, e.target.value)}
+                            className={`bg-gray-800 text-sm rounded px-2 py-1 outline-none focus:ring-1 focus:ring-blue-500 ${u.tier === 'PREMIUM' ? 'text-yellow-400' : u.tier === 'PLUS' ? 'text-blue-400' : 'text-gray-400'}`}>
+                            <option value="FREE">FREE</option>
+                            <option value="PLUS">PLUS</option>
+                            <option value="PREMIUM">PREMIUM</option>
+                          </select>
+                        ) : (
+                          <span className={u.tier === 'PREMIUM' ? 'text-yellow-400' : u.tier === 'PLUS' ? 'text-blue-400' : 'text-gray-400'}>
+                            {u.tier}
+                          </span>
+                        )}
                       </td>
                       <td className="py-3">
                         <span className={u.role === 'ADMIN' ? 'text-red-400' : u.role === 'MODERATOR' ? 'text-purple-400' : 'text-gray-400'}>
