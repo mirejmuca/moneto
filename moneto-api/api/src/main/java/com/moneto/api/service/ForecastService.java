@@ -76,7 +76,7 @@ public class ForecastService {
         return result;
     }
 
-    private double[] calculateRegression(List<Double> values) {
+    double[] calculateRegression(List<Double> values) {
         int n = values.size();
         if (n < 2) {
             double val = n == 1 ? values.get(0) : 0;
