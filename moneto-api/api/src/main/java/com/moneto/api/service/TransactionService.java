@@ -24,7 +24,7 @@ public class TransactionService {
 
     public List<Transaction> getAllTransactions() {
         User user = userService.getCurrentUser();
-        return transactionRepository.findByUserId(user.getId());
+        return transactionRepository.findByUserIdOrderByDateDescIdDesc(user.getId());
     }
 
     public List<Transaction> getTransactionsByType(TransactionType type) {

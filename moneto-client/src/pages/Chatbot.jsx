@@ -1,7 +1,10 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Navbar from '../components/Navbar'
+import PaywallLock from '../components/PaywallLock'
 import { askChatbot } from '../services/chatbotService'
+import ReactMarkdown from 'react-markdown'
+import { getSubscriptionStatus } from '../services/subscriptionService'
 
 export default function Chatbot() {
   const [messages, setMessages] = useState([
@@ -12,6 +15,23 @@ export default function Chatbot() {
   const [locked, setLocked] = useState(false)
   const navigate = useNavigate()
   const bottomRef = useRef(null)
+  const [checking, setChecking] = useState(true)
+
+  useEffect(() => {
+  const checkAccess = async () => {
+    try {
+      const status = await getSubscriptionStatus()
+      if (status.tier !== 'PREMIUM') {
+        setLocked(true)
+      }
+    } catch (err) {
+      setLocked(true)
+    } finally {
+      setChecking(false)
+    }
+  }
+  checkAccess()
+}, [])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -46,24 +66,13 @@ export default function Chatbot() {
     }
   }
 
-  if (locked) {
-    return (
-      <div className="min-h-screen bg-gray-950 text-white">
-        <Navbar />
-        <div className="max-w-2xl mx-auto px-8 py-16 text-center">
-          <div className="text-yellow-400 text-5xl mb-4">🔒</div>
-          <h1 className="text-2xl font-bold mb-2">AI Financial Assistant</h1>
-          <p className="text-gray-400 mb-6">
-            This is a Premium feature. Upgrade to chat with your personal financial assistant.
-          </p>
-          <button onClick={() => navigate('/subscription')}
-            className="bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-semibold py-3 px-6 rounded-lg transition">
-            Upgrade to Premium
-          </button>
-        </div>
-      </div>
-    )
-  }
+  if (locked) return (
+    <PaywallLock
+      title="AI Financial Assistant"
+      description="This is a Premium feature. Upgrade to chat with your personal financial assistant."
+      tier="Premium"
+    />
+  )
 
   return (
     <div className="min-h-screen bg-gray-950 text-white flex flex-col">
@@ -78,7 +87,13 @@ export default function Chatbot() {
               <div className={`max-w-[75%] rounded-2xl px-4 py-3 ${
                 m.role === 'user' ? 'bg-blue-600 text-white' : 'bg-gray-800 text-gray-100'
               }`}>
-                <p className="text-sm whitespace-pre-wrap">{m.text}</p>
+                {m.role === 'bot' ? (
+                  <div className="text-sm chat-markdown">
+                    <ReactMarkdown>{m.text}</ReactMarkdown>
+                  </div>
+                ) : (
+                  <p className="text-sm whitespace-pre-wrap">{m.text}</p>
+                )}
               </div>
             </div>
           ))}

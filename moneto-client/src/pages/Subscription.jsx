@@ -1,46 +1,49 @@
 import { useState, useEffect } from 'react'
 import Navbar from '../components/Navbar'
-import { getSubscriptionStatus, subscribe, cancelSubscription } from '../services/subscriptionService'
+import { getSubscriptionStatus, subscribe, cancelSubscription, getPlans } from '../services/subscriptionService'
 
-const PLANS = [
-  {
-    tier: 'FREE',
+// Përshkrimet e veçorive janë statike (tekst përshkrues), ndërsa çmimet vijnë nga backend-i
+const PLAN_INFO = {
+  FREE: {
     name: 'Free',
-    price: '$0',
     features: ['Transaction tracking', 'Budgets & categories', 'Saving goals', 'Basic analytics', 'Multi-currency support'],
     highlight: false
   },
-  {
-    tier: 'PLUS',
+  PLUS: {
     name: 'Plus',
-    price: '$2.99',
     features: ['Everything in Free', 'Expense forecasting', 'PDF export', 'Advanced insights'],
     highlight: false
   },
-  {
-    tier: 'PREMIUM',
+  PREMIUM: {
     name: 'Premium',
-    price: '$4.99',
     features: ['Everything in Plus', 'AI Financial Assistant', 'Custom alerts'],
     highlight: true
   }
-]
+}
 
 export default function Subscription() {
   const [status, setStatus] = useState(null)
+  const [plans, setPlans] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedTier, setSelectedTier] = useState(null)
   const [processing, setProcessing] = useState(false)
   const [card, setCard] = useState({ number: '', name: '', expiry: '', cvc: '' })
 
   useEffect(() => {
-    fetchStatus()
+    fetchData()
   }, [])
 
-  const fetchStatus = async () => {
+  const fetchData = async () => {
     try {
-      const data = await getSubscriptionStatus()
-      setStatus(data)
+      const [statusData, plansData] = await Promise.all([getSubscriptionStatus(), getPlans()])
+      setStatus(statusData)
+      // Bashko çmimin nga backend-i me përshkrimet statike
+      const merged = plansData.map(p => ({
+        tier: p.tier,
+        price: p.price === 0 ? '$0' : '$' + p.price,
+        ...PLAN_INFO[p.tier]
+      }))
+      setPlans(merged)
     } catch (err) {
       console.error(err)
     } finally {
@@ -53,13 +56,12 @@ export default function Subscription() {
     setProcessing(true)
     try {
       await new Promise(resolve => setTimeout(resolve, 1500))
-      // Nxirr 4 shifrat e fundit të kartës (vetëm shifrat, pastaj 4 të fundit)
       const digits = card.number.replace(/\D/g, '')
       const last4 = digits.slice(-4)
       await subscribe(selectedTier.tier, last4)
       setSelectedTier(null)
       setCard({ number: '', name: '', expiry: '', cvc: '' })
-      fetchStatus()
+      fetchData()
     } catch (err) {
       console.error(err)
     } finally {
@@ -70,7 +72,7 @@ export default function Subscription() {
   const handleCancel = async () => {
     try {
       await cancelSubscription()
-      fetchStatus()
+      fetchData()
     } catch (err) {
       console.error(err)
     }
@@ -113,7 +115,7 @@ export default function Subscription() {
 
         {/* Plans */}
         <div className="grid grid-cols-3 gap-6">
-          {PLANS.map(plan => (
+          {plans.map(plan => (
             <div key={plan.tier}
               className={`bg-gray-900 rounded-2xl p-6 relative ${plan.highlight ? 'border-2 border-yellow-500' : ''}`}>
               {plan.highlight && (

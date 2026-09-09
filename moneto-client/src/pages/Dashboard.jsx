@@ -79,7 +79,7 @@ export default function Dashboard() {
             <span className="text-yellow-400 text-lg">🏆</span>
             <p className="text-gray-300 text-sm">
               Top spend this month: <span className="text-white font-semibold">{topCategory.category}</span>
-              {' '}— <span className="text-red-400">${topCategory.amount}</span>
+              {' '}— <span className="text-red-400">{currencySymbol}{topCategory.amount}</span>
             </p>
           </div>
         )}

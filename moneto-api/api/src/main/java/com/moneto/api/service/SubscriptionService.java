@@ -7,7 +7,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -51,7 +53,8 @@ public class SubscriptionService {
         String transactionId = "txn_" + java.util.UUID.randomUUID().toString().substring(0, 12);
 
         // Përcakto çmimin sipas planit
-        String amount = tier == SubscriptionTier.PREMIUM ? "$4.99" : "$2.99";
+        double price = tier == SubscriptionTier.PREMIUM ? 2.99 : 1.99;
+        String amount = "$" + price;
 
         // Dërgo faturën me email (jo-bllokuese — nëse dështon, abonimi mbetet aktiv)
         try {
@@ -107,5 +110,26 @@ public class SubscriptionService {
         if (current.ordinal() < required.ordinal()) {
             throw new RuntimeException("This feature requires a " + required.name() + " subscription");
         }
+    }
+
+    public List<Map<String, Object>> getPlans() {
+        List<Map<String, Object>> plans = new ArrayList<>();
+
+        Map<String, Object> free = new HashMap<>();
+        free.put("tier", "FREE");
+        free.put("price", 0.0);
+        plans.add(free);
+
+        Map<String, Object> plus = new HashMap<>();
+        plus.put("tier", "PLUS");
+        plus.put("price", 1.99);
+        plans.add(plus);
+
+        Map<String, Object> premium = new HashMap<>();
+        premium.put("tier", "PREMIUM");
+        premium.put("price", 2.99);
+        plans.add(premium);
+
+        return plans;
     }
 }

@@ -15,3 +15,8 @@ export const subscribe = async (tier, cardLast4) => {
 export const cancelSubscription = async () => {
     await api.post('/subscription/cancel');
 };
+
+export const getPlans = async () => {
+    const response = await api.get('/subscription/plans');
+    return response.data;
+};

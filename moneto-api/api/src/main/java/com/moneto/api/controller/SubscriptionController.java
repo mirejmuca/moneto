@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -32,5 +33,10 @@ public class SubscriptionController {
     public ResponseEntity<String> cancel() {
         subscriptionService.cancelSubscription();
         return ResponseEntity.ok("Subscription cancelled");
+    }
+
+    @GetMapping("/plans")
+    public ResponseEntity<List<Map<String, Object>>> getPlans() {
+        return ResponseEntity.ok(subscriptionService.getPlans());
     }
 }

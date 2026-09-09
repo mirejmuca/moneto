@@ -29,8 +29,15 @@ public class InsightsService {
 
         LocalDate now = LocalDate.now();
         LocalDate thisMonthStart = now.withDayOfMonth(1);
+        int dayOfMonth = now.getDayOfMonth();
+
+        // Muaji i kaluar deri në TË NJËJTËN ditë (krahasim pro-rata, "mollë me mollë").
+        // Kështu një muaj i papërfunduar s'krahasohet gabimisht me një muaj të plotë.
         LocalDate lastMonthStart = thisMonthStart.minusMonths(1);
-        LocalDate lastMonthEnd = thisMonthStart.minusDays(1);
+        // Kufizo te e njëjta ditë, por jo më shumë se ditët që ka muaji i kaluar
+        int lastMonthLength = lastMonthStart.lengthOfMonth();
+        int compareDay = Math.min(dayOfMonth, lastMonthLength);
+        LocalDate lastMonthEnd = lastMonthStart.withDayOfMonth(compareDay);
 
         List<Transaction> thisMonth = transactionRepository
                 .findByUserIdAndDateBetween(user.getId(), thisMonthStart, now);
@@ -68,7 +75,6 @@ public class InsightsService {
         }
 
         // 5. Mesatarja ditore
-        int dayOfMonth = now.getDayOfMonth();
         result.put("dailyAverage", Math.round(thisMonthExpense / dayOfMonth));
 
         return result;

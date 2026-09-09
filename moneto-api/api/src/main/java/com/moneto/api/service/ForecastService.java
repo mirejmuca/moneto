@@ -33,7 +33,8 @@ public class ForecastService {
         List<Double> monthlyTotals = new ArrayList<>();
         List<String> monthLabels = new ArrayList<>();
 
-        for (int i = monthsBack - 1; i >= 0; i--) {
+        // Historiku: vetëm muajt E PLOTË të kaluar (përjashto muajin aktual, që s'ka mbaruar)
+        for (int i = monthsBack; i >= 1; i--) {
             LocalDate date = LocalDate.now().minusMonths(i);
             LocalDate start = date.withDayOfMonth(1);
             LocalDate end = date.withDayOfMonth(date.lengthOfMonth());
@@ -52,27 +53,54 @@ public class ForecastService {
             monthLabels.add(date.getMonth().toString());
         }
 
-        // Llogarit slope dhe intercept një herë
-        double[] regression = calculateRegression(monthlyTotals);
+
+        // Llogarit regresionin mbi muajt e plotë
+        // Përjashto muajt pa të dhëna (total 0) — ata s'kanë shpenzime të regjistruara,
+        // dhe do të shtrembëronin regresionin duke krijuar një tendencë false
+        List<Double> nonZeroTotals = new ArrayList<>();
+        for (Double total : monthlyTotals) {
+            if (total > 0) {
+                nonZeroTotals.add(total);
+            }
+        }
+
+        // Nëse s'ka mjaftueshëm të dhëna reale, përdor çfarë ka
+        List<Double> dataForRegression = nonZeroTotals.isEmpty() ? monthlyTotals : nonZeroTotals;
+
+        // Llogarit regresionin mbi muajt me të dhëna reale
+        double[] regression = calculateRegression(dataForRegression);
         double slope = regression[0];
         double intercept = regression[1];
+        int n = dataForRegression.size();
 
-        int n = monthlyTotals.size();
-
-        // Gjenero 3 parashikime
+        // Parashikimet: duke filluar NGA muaji aktual (shtatori) dhe 2 muajt e ardhshëm
         List<Double> forecasts = new ArrayList<>();
         List<String> forecastLabels = new ArrayList<>();
         for (int i = 0; i < 3; i++) {
             double predicted = slope * (n + i) + intercept;
             forecasts.add(Math.max(0, predicted));
-            forecastLabels.add(LocalDate.now().plusMonths(i + 1).getMonth().toString());
+            forecastLabels.add(LocalDate.now().plusMonths(i).getMonth().toString());
         }
+
+        // Shpenzimet AKTUALE të muajit aktual deri tani (për pikën krahasuese)
+        LocalDate currentStart = LocalDate.now().withDayOfMonth(1);
+        LocalDate today = LocalDate.now();
+        List<Transaction> currentTransactions = transactionRepository
+                .findByUserIdAndDateBetween(user.getId(), currentStart, today);
+        double currentActual = currentTransactions.stream()
+                .filter(t -> t.getType() == TransactionType.EXPENSE)
+                .map(t -> exchangeRateService.convert(
+                        t.getAmount(), t.getCurrency().name(), user.getCurrency().name()))
+                .mapToDouble(BigDecimal::doubleValue)
+                .sum();
 
         Map<String, Object> result = new HashMap<>();
         result.put("history", monthlyTotals);
         result.put("labels", monthLabels);
         result.put("forecasts", forecasts);
         result.put("forecastLabels", forecastLabels);
+        result.put("currentActual", currentActual);
+        result.put("currentMonthLabel", LocalDate.now().getMonth().toString());
         return result;
     }
 

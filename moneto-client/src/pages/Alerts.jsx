@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import { getCurrencySymbol } from '../utils/currency'
 import { getAlerts, createAlert, deleteAlert } from '../services/alertService'
 import { getCategories } from '../services/categoryService'
+import PaywallLock from '../components/PaywallLock'
 
 const ALERT_TYPES = [
   { value: 'DAILY_SPENDING', label: 'Daily spending', desc: 'Alert when daily expenses exceed a threshold', needsCategory: false },
@@ -88,24 +89,13 @@ export default function Alerts() {
     </div>
   )
 
-  if (locked) {
-    return (
-      <div className="min-h-screen bg-gray-950 text-white">
-        <Navbar />
-        <div className="max-w-2xl mx-auto px-8 py-16 text-center">
-          <div className="text-yellow-400 text-5xl mb-4">🔒</div>
-          <h1 className="text-2xl font-bold mb-2">Custom Alerts</h1>
-          <p className="text-gray-400 mb-6">
-            This is a Premium feature. Upgrade to set up personalized spending alerts.
-          </p>
-          <button onClick={() => navigate('/subscription')}
-            className="bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-semibold py-3 px-6 rounded-lg transition">
-            Upgrade to Premium
-          </button>
-        </div>
-      </div>
-    )
-  }
+if (locked) return (
+  <PaywallLock
+    title="Custom Alerts"
+    description="This is a Premium feature. Upgrade to set up personalized spending alerts."
+    tier="Premium"
+  />
+)
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">

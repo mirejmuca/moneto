@@ -5,6 +5,7 @@ import { getInsights } from '../services/insightsService'
 import { useAuth } from '../context/AuthContext'
 import { getCurrencySymbol } from '../utils/currency'
 import { downloadReport } from '../services/reportService'
+import PaywallLock from '../components/PaywallLock'
 
 export default function Insights() {
   const [data, setData] = useState(null)
@@ -52,24 +53,13 @@ export default function Insights() {
   }
 }
 
-  if (locked) {
-    return (
-      <div className="min-h-screen bg-gray-950 text-white">
-        <Navbar />
-        <div className="max-w-2xl mx-auto px-8 py-16 text-center">
-          <div className="text-yellow-400 text-5xl mb-4">🔒</div>
-          <h1 className="text-2xl font-bold mb-2">Advanced Insights</h1>
-          <p className="text-gray-400 mb-6">
-            This is a Plus feature. Upgrade to unlock detailed insights about your spending patterns.
-          </p>
-          <button onClick={() => navigate('/subscription')}
-            className="bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-semibold py-3 px-6 rounded-lg transition">
-            Upgrade to Plus
-          </button>
-        </div>
-      </div>
-    )
-  }
+if (locked) return (
+<PaywallLock
+  title="Advanced Insights"
+  description="This is a Plus feature. Upgrade to unlock detailed insights about your spending patterns."
+  tier="Plus"
+/>
+)
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
@@ -109,7 +99,7 @@ export default function Insights() {
                 <p className={`text-3xl font-bold ${data.savingsRate >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                   {data.savingsRate}%
                 </p>
-                <p className="text-gray-500 text-sm mt-1">of your income this month</p>
+                <p className="text-gray-500 text-sm mt-1">of your income this month so far</p>
               </>
             ) : (
               <p className="text-gray-500 text-sm">No income recorded this month</p>

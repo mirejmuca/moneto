@@ -68,8 +68,13 @@ public class BudgetService {
         Map<String, Object> status = new HashMap<>();
 
         for (Budget budget : budgets) {
+            // Vetëm transaksionet e muajit dhe vitit të buxhetit
+            LocalDate monthStart = LocalDate.of(budget.getYear(), budget.getMonth(), 1);
+            LocalDate monthEnd = monthStart.withDayOfMonth(monthStart.lengthOfMonth());
+
             List<Transaction> transactions = transactionRepository
-                    .findByUserIdAndCategoryId(user.getId(), budget.getCategory().getId());
+                    .findByUserIdAndCategoryIdAndDateBetween(
+                            user.getId(), budget.getCategory().getId(), monthStart, monthEnd);
 
             BigDecimal spent = transactions.stream()
                     .map(Transaction::getAmount)
